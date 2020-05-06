@@ -97,4 +97,22 @@ class Products with ChangeNotifier {
 
     notifyListeners();
   }
+
+  void updateProduct(String id, Product newProduct) {
+    final prodIndex = _items.indexWhere((prod) => prod.id == id);
+    print('From within updateProduct, prodIndex is: $prodIndex');
+    if (prodIndex >= 0) {
+      print('prodIndex is >= 0');
+      _items[prodIndex] = newProduct;
+      print('${items[prodIndex]}');
+      notifyListeners();
+    } else {
+      print('Couldnt find index, bastard');
+    }
+  }
+
+  void deleteProduct(String id) {
+    _items.removeWhere((prod) => prod.id == id);
+    notifyListeners();
+  }
 }

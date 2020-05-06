@@ -24,11 +24,39 @@ class _EditProductScreenState extends State<EditProductScreen> {
     price: 0,
     imageUrl: '',
   );
+  var _initValues = {
+    'title': '',
+    'description': '',
+    'price': '',
+    'imageUrl': '',
+  };
+
+  var _isInit = true;
 
   @override
   void initState() {
     _imageUrlFocusNode.addListener(_updatedImageUrl);
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      final productId = ModalRoute.of(context).settings.arguments as String;
+      if (productId != null) {
+        _editedProduct =
+            Provider.of<Products>(context, listen: false).findById(productId);
+        _initValues = {
+          'title': _editedProduct.title,
+          'description': _editedProduct.description,
+          'price': _editedProduct.price.toString(),
+          'imageUrl': '',
+        };
+        _imageUrlController.text = _editedProduct.imageUrl;
+      }
+    }
+    _isInit = false;
+    super.didChangeDependencies();
   }
 
   @override
@@ -46,12 +74,20 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   void _saveForm() {
-    final _isValidated = _formKey.currentState.validate();
-    if (_isValidated) {
-      _formKey.currentState.save();
-      Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
-      Navigator.of(context).pop();
+    final _isValid = _formKey.currentState.validate();
+    if (!_isValid) {
+      return;
     }
+    _formKey.currentState.save();
+    if (_editedProduct.id != null) {
+      print('id is not null');
+      print(_editedProduct.id);
+      Provider.of<Products>(context, listen: false)
+          .updateProduct(_editedProduct.id, _editedProduct);
+    } else {
+      Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+    }
+    Navigator.of(context).pop();
   }
 
   @override
@@ -85,6 +121,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 child: Column(
                   children: [
                     TextFormField(
+                      initialValue: _initValues['title'],
                       validator: (value) {
                         if (value.isEmpty) {
                           return 'Skriv nåt då, gör det bara';
@@ -110,14 +147,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       },
                       onSaved: (value) {
                         _editedProduct = Product(
-                            id: null,
-                            title: value,
-                            description: _editedProduct.description,
-                            price: _editedProduct.price,
-                            imageUrl: _editedProduct.imageUrl);
+                          title: value,
+                          description: _editedProduct.description,
+                          price: _editedProduct.price,
+                          imageUrl: _editedProduct.imageUrl,
+                          id: _editedProduct.id,
+                          isFavorite: _editedProduct.isFavorite,
+                        );
                       },
                     ),
                     TextFormField(
+                      initialValue: _initValues['price'],
                       validator: (value) {
                         if (value.isEmpty) {
                           return 'Skriv nåt då, gör det bara';
@@ -146,14 +186,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       },
                       onSaved: (value) {
                         _editedProduct = Product(
-                            id: null,
-                            title: _editedProduct.title,
-                            description: _editedProduct.description,
-                            price: double.parse(value),
-                            imageUrl: _editedProduct.imageUrl);
+                          title: _editedProduct.title,
+                          description: _editedProduct.description,
+                          price: double.parse(value),
+                          imageUrl: _editedProduct.imageUrl,
+                          id: _editedProduct.id,
+                          isFavorite: _editedProduct.isFavorite,
+                        );
                       },
                     ),
                     TextFormField(
+                      initialValue: _initValues['description'],
                       // initialValue: 'Booo yaaah!',
                       validator: (value) {
                         if (value.isEmpty) {
@@ -165,8 +208,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         if (value.length <= 3) {
                           return 'Skriv längre än tre bokstäver ditt lilla...lu*er';
                         }
-                        if (value.length > 11) {
-                          return 'Skriv max 11 bokstäver!';
+                        if (value.length > 200) {
+                          return 'Skriv max 200 bokstäver!';
                         }
                         return null;
                       },
@@ -177,11 +220,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       focusNode: _descriptionFocusNode,
                       onSaved: (value) {
                         _editedProduct = Product(
-                            id: null,
-                            title: _editedProduct.title,
-                            description: value,
-                            price: _editedProduct.price,
-                            imageUrl: _editedProduct.imageUrl);
+                          title: _editedProduct.title,
+                          description: value,
+                          price: _editedProduct.price,
+                          imageUrl: _editedProduct.imageUrl,
+                          id: _editedProduct.id,
+                          isFavorite: _editedProduct.isFavorite,
+                        );
                       },
                     ),
                     Row(
@@ -211,6 +256,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         ),
                         Expanded(
                           child: TextFormField(
+                              //initialValue: _initValues['imageUrl'], När du har controller, kan inte sätta 'initialValue:'
                               decoration:
                                   InputDecoration(labelText: 'Enter image URL'),
                               keyboardType: TextInputType.url,
@@ -219,11 +265,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                               focusNode: _imageUrlFocusNode,
                               onSaved: (value) {
                                 _editedProduct = Product(
-                                    id: null,
-                                    title: _editedProduct.title,
-                                    description: _editedProduct.description,
-                                    price: _editedProduct.price,
-                                    imageUrl: value);
+                                  title: _editedProduct.title,
+                                  description: _editedProduct.description,
+                                  price: _editedProduct.price,
+                                  imageUrl: value,
+                                  id: _editedProduct.id,
+                                  isFavorite: _editedProduct.isFavorite,
+                                );
                               },
                               onFieldSubmitted: (_) {
                                 _saveForm();
