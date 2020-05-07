@@ -69,6 +69,10 @@ class Products with ChangeNotifier {
     return _items.where((prodItem) => prodItem.isFavorite).toList();
   }
 
+  Product findById(String id) {
+    return _items.firstWhere((prod) => prod.id == id);
+  }
+
   // Below would be a good approach if we wanted [app-wide state]. Changing the settings in products_overview_screen
   // will change it in the whole app.
   // We want [widget-local state] so changing settings only changes state inside the products_overview_screen.
@@ -83,12 +87,18 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  Product findById(String id) {
-    return _items.firstWhere((prod) => prod.id == id);
+  Future<void> fetchAndSetProducts() async {
+    const url = 'https://shopapploandbehold.firebaseio.com/products.json';
+    try {
+      final response = await http.get(url);
+      print(json.decode(response.body));
+    } catch (error) {
+      throw (error);
+    }
   }
 
   Future<void> addProduct(Product product) async {
-    const url = 'https://shopapploandbehold.firebaseio.com/products';
+    const url = 'https://shopapploandbehold.firebaseio.com/products.json';
     try {
       final response = await http.post(
         url,

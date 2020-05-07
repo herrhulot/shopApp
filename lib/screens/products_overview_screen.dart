@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/cart.dart';
 
+import '../providers/cart.dart';
+import '../providers/products.dart';
 import '../screens/cart_screen.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/products_grid.dart';
@@ -19,6 +20,30 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showFavoritesOnly = false;
+  var _isInit = true;
+
+  @override
+  void initState() {
+    // You cant use 'context' in initState. Unless you use 'listen: false'. Then you dont need a workaround.
+    //Provider.of<Products>(context).fetchAndSetProducts();
+
+    // Workaround #1 - will be fast but order is different. Kind of an hack:
+    /*  Future.delayed(Duration.zero).then((value) {
+      Provider.of<Products>(context).fetchAndSetProducts();
+    }); */
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    // Workaround #2
+    if (_isInit) {
+      Provider.of<Products>(context).fetchAndSetProducts();
+    }
+    _isInit = false;
+
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
