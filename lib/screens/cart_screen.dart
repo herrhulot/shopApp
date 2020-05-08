@@ -4,11 +4,24 @@ import '../providers/cart.dart' show Cart;
 import '../widgets/cart_item.dart';
 import '../providers/orders.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static const routeName = '/cart';
+
+  @override
+  _CartScreenState createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  var isInactive = true;
+  var isOrderLoading = false;
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<Cart>(context);
+    if (cart.items.keys.length > 0) {
+      isInactive = false;
+    } else {
+      isInactive = true;
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Cart'),
@@ -39,16 +52,27 @@ class CartScreen extends StatelessWidget {
                     ),
                   ),
                   FlatButton(
-                    child: Text('ORDER NOW'),
-                    onPressed: () {
-                      Provider.of<Orders>(context, listen: false).addOrder(
-                        cart.items.values.toList(),
-                        cart.totalAmount,
-                      );
-                      cart.clearCart();
-                    },
+                    child: isOrderLoading
+                        ? CircularProgressIndicator()
+                        : Text('ORDER NOW'),
+                    onPressed: isInactive
+                        ? null
+                        : () async {
+                            setState(() {
+                              isOrderLoading = true;
+                            });
+                            await Provider.of<Orders>(context, listen: false)
+                                .addOrder(
+                              cart.items.values.toList(),
+                              cart.totalAmount,
+                            );
+                            setState(() {
+                              isOrderLoading = false;
+                            });
+                            cart.clearCart();
+                          },
                     textColor: Theme.of(context).primaryColor,
-                  )
+                  ),
                 ],
               ),
             ),
