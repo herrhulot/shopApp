@@ -20,6 +20,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
+    final scaffold = Scaffold.of(context);
 
     return GestureDetector(
       onTap: () {
@@ -53,8 +54,14 @@ class ProductItem extends StatelessWidget {
                   icon: product.isFavorite
                       ? Icon(Icons.favorite)
                       : Icon(Icons.favorite_border),
-                  onPressed: () {
-                    product.toggleFavoriteStatus();
+                  onPressed: () async {
+                    try {
+                      await product.toggleFavoriteStatus();
+                    } catch (error) {
+                      scaffold.showSnackBar(SnackBar(
+                        content: Text(error.toString()),
+                      ));
+                    }
                   },
                   color: Theme.of(context).accentColor,
                 ),
