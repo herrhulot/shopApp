@@ -32,7 +32,7 @@ class Product with ChangeNotifier {
   } */
 
   Future<void> toggleFavoriteStatus() async {
-    final url = 'https://shopapploandbehold.firebaseio.com/products/$id';
+    final url = 'https://shopapploandbehold.firebaseio.com/products/$id.json';
     /*  final exist ingFavoriteIndex = _items.indexWhere((prod) => prod.id == id);
     var existingFavoriteProduct = _items[existingFavoriteIndex]; */
     var existingFavoriteValue = isFavorite;

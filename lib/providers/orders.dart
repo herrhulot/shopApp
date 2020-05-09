@@ -27,39 +27,39 @@ class Orders with ChangeNotifier {
 
   Future<void> fetchAndSetOrders() async {
     const url = 'https://shopapploandbehold.firebaseio.com/orders.json';
-    try {
-      final response = await http.get(url);
-      final extractedData = json.decode(response.body) as Map<String, dynamic>;
-      final List<OrderItem> loadedOrders = [];
-
-      extractedData.forEach((orderId, orderData) {
-        loadedOrders.add(OrderItem(
-          id: 'slkjdsljskdsd',
-          amount: 330.3,
-          dateTime: DateTime.now(),
-          products: [
-            CartItem(
-              id: 'someId',
-              title: 'someTitle',
-              quantity: 5,
-              price: 39,
-            )
-          ], // TODO: Ev. omvandla till CartItems
-        ));
-      });
-      _orders = loadedOrders;
-      notifyListeners();
-    } catch (error) {
-      print(error);
-      throw (error);
+    final response = await http.get(url);
+    //print(json.decode(response.body));
+    final List<OrderItem> loadedOrders = [];
+    final extractedData = json.decode(response.body);
+    if (extractedData == null) {
+      return;
     }
+    extractedData.forEach((orderId, orderData) {
+      loadedOrders.add(OrderItem(
+        id: orderId,
+        amount: orderData['amount'],
+        dateTime: DateTime.parse(
+          orderData['dateTime'],
+        ),
+        products: (orderData['products'] as List<dynamic>)
+            .map((item) => CartItem(
+                  id: item['id'],
+                  title: item['title'],
+                  quantity: item['quantity'],
+                  price: item['price'],
+                ))
+            .toList(),
+      ));
+    });
+    _orders = loadedOrders.reversed.toList();
+    notifyListeners();
   }
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     const url = 'https://shopapploandbehold.firebaseio.com/orders.json';
 
-    final cartProductsMaps = [];
-
+    // Our version to the challenge. Also works.
+    /* final cartProductsMaps = [];
     cartProducts.forEach((prod) {
       cartProductsMaps.add({
         'id': prod.id,
@@ -67,25 +67,29 @@ class Orders with ChangeNotifier {
         'quantity': prod.quantity,
         'price': prod.price,
       });
-    });
-
+    }); */
+    final timestamp = DateTime.now();
     final response = await http.post(url,
         body: json.encode({
           'amount': total,
-          'dateTime': DateTime.now().toString(),
-          'products': cartProductsMaps,
+          'dateTime': timestamp.toIso8601String(),
+          'products': cartProducts
+              .map((cp) => {
+                    'title': cp.title,
+                    'quantity': cp.quantity,
+                    'price': cp.price,
+                  })
+              .toList(),
         }));
-
-    final newOrder = OrderItem(
-      id: json.decode(response.body)['name'],
-      amount: total,
-      dateTime: DateTime.now(),
-      products: cartProducts,
-    );
 
     _orders.insert(
       0,
-      newOrder,
+      OrderItem(
+          id: json.decode(response.body)['name'],
+          amount: total,
+          dateTime: timestamp,
+          products: cartProducts //cartProducts,
+          ),
     );
     notifyListeners();
   }

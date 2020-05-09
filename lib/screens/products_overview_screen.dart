@@ -25,7 +25,7 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
 
   @override
   void initState() {
-    // You cant use 'context' in initState. Unless you use 'listen: false'. Then you dont need a workaround.
+    // You can't use 'context' in initState. Unless you use 'listen: false'. Then you dont need a workaround.
     //Provider.of<Products>(context).fetchAndSetProducts();
 
     // Workaround #1 - will be fast but order is different. Kind of an hack:
