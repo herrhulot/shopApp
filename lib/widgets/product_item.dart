@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../screens/product_detail_screen.dart';
 import '../providers/product.dart';
 import '../providers/cart.dart';
+import '../providers/auth.dart';
 
 class ProductItem extends StatelessWidget {
   // final String id;
@@ -21,7 +22,7 @@ class ProductItem extends StatelessWidget {
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
     final scaffold = Scaffold.of(context);
-
+    final authData = Provider.of<Auth>(context, listen: false);
     return GestureDetector(
       onTap: () {
         Navigator.of(context)
@@ -56,7 +57,7 @@ class ProductItem extends StatelessWidget {
                       : Icon(Icons.favorite_border),
                   onPressed: () async {
                     try {
-                      await product.toggleFavoriteStatus();
+                      await product.toggleFavoriteStatus(authData.token);
                     } catch (error) {
                       scaffold.showSnackBar(SnackBar(
                         content: Text(error.toString()),
